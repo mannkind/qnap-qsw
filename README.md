@@ -42,7 +42,7 @@ qnap_qsw_poe: "/config/qnap-qsw poeMode --host {{ host }} --token {{ token }} --
 
 #### automations.yaml
 ```
-- alias: "Turn off non-essebtial POE ports during power outage"
+- alias: "Turn off non-essential POE ports during power outage"
   description: ""
   trigger:
     - type: turned_off
@@ -68,7 +68,7 @@ qnap_qsw_poe: "/config/qnap-qsw poeMode --host {{ host }} --token {{ token }} --
         ports: 1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,19,20
         mode: disabled
   mode: single
-- alias: "Turn on non-essebtial POE ports after power outage"
+- alias: "Turn on non-essential POE ports after power outage"
   description: ""
   trigger:
     - type: turned_on
