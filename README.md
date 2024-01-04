@@ -16,7 +16,8 @@ A quick and dirty script to take action on a QNAP QSW-M2116P-2T2S.
 ```
 #### With Token
 ```
-./qnap-qsw poeMode --host switch.lan --token BLAH --ports 1,2,3,4 --mode disabled
+token=$(./qnap-qsw login --host switch.lan --password BLAH)
+./qnap-qsw poeMode --host switch.lan --token $token --ports 1,2,3,4 --mode disabled
 ```
 
 ### Enable POE Ports
