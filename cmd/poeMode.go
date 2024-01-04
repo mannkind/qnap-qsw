@@ -21,7 +21,7 @@ var poeModeCmd = &cobra.Command{
 		}
 
 		// Get the current POE interface statuses
-		knownInterafces, err := q.POEInterfaces()
+		knownInterfaces, err := q.POEInterfaces()
 		if err != nil {
 			fmt.Printf("Error fetching known interfaces from qnap qsw; %s\n", err)
 			return
@@ -31,12 +31,12 @@ var poeModeCmd = &cobra.Command{
 		wg := sync.WaitGroup{}
 		ch := make(chan error, len(poeModeOpts.Ports))
 		for _, port := range poeModeOpts.Ports {
-			properties, ok := knownInterafces[port]
+			properties, ok := knownInterfaces[port]
 			if !ok {
 				continue
 			}
 
-			properties.Mode = poeModeOpts.Mode
+			properties.Mode = qnap.POEModes.Unknown.FromString(poeModeOpts.Mode)
 			wg.Add(1)
 			go func(portIdx string) {
 				ch <- q.UpdatePOEInterfaces(&wg, portIdx, properties)
@@ -72,4 +72,5 @@ func init() {
 	poeModeCmd.Flags().StringSliceVar(&poeModeOpts.Ports, "ports", []string{}, "The ports to modify")
 	poeModeCmd.Flags().StringVar(&poeModeOpts.Mode, "mode", "disable", "The mode of the ports to modify")
 	poeModeCmd.MarkFlagRequired("host")
+	poeModeCmd.MarkFlagsMutuallyExclusive("password", "token")
 }
