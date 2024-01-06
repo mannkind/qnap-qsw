@@ -1,14 +1,12 @@
 package cmd
 
-type loginCmdOptions struct {
+type rootCommandOptions struct {
 	Host     string
 	Password string
 }
 
 type poeModeCmdOptions struct {
-	Host     string
-	Password string
-	Token    string
-	Ports    []string
-	Mode     string
+	Token string
+	Ports []string
+	Mode  string
 }

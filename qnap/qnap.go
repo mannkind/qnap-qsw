@@ -14,6 +14,7 @@ import (
 
 const apiURL string = "https://%s/api/v3"
 const loginURL string = apiURL + "/users/login"
+const verificationURL string = apiURL + "/users/verification"
 const interfaceURL string = apiURL + "/poe/interface"
 
 type QNAP struct {
@@ -35,9 +36,14 @@ func NewWithToken(host string, token string) *QNAP {
 }
 
 func (q *QNAP) Login(password string) (string, error) {
-	// If we already have a token, return it
+	// If we already have a token, verify it and return it
+	// Otherwise login again to obtain a new token
+	//
+	// QNAP is annoying here and obtaining a new token invalidates the existing token
 	if q.token != "" {
-		return q.token, nil
+		if err := q.Verify(); err == nil {
+			return q.token, nil
+		}
 	}
 
 	// Prepare the request
@@ -129,6 +135,21 @@ func (q *QNAP) UpdatePOEInterfaces(wg *sync.WaitGroup, port string, properties i
 	defer resp.Body.Close()
 	if err != nil {
 		return fmt.Errorf("update poe interface; read response body; %w", err)
+	}
+
+	return nil
+}
+
+func (q *QNAP) Verify() error {
+	// Setup and send the request
+	url := fmt.Sprintf(verificationURL, q.host)
+	resp, err := q.sendHTTPRequest(http.MethodGet, url, "")
+	if err != nil {
+		return fmt.Errorf("verify; %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("verify; status code %d", resp.StatusCode)
 	}
 
 	return nil

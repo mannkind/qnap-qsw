@@ -7,6 +7,7 @@ import (
 )
 
 // Represents the base command when called without any subcommands
+var rootCmdOpts = rootCommandOptions{}
 var rootCmd = &cobra.Command{
 	Use:   "qnap-qsw",
 	Short: "The QNAP QSW tool",
@@ -19,4 +20,9 @@ func Execute() {
 	if err != nil {
 		os.Exit(1)
 	}
+}
+
+func init() {
+	rootCmd.PersistentFlags().StringVar(&rootCmdOpts.Host, "host", "switch.lan", "The host/ip")
+	rootCmd.PersistentFlags().StringVar(&rootCmdOpts.Password, "password", os.Getenv("QNAP_QSW_PASSWORD"), "The password of the admin user (default: $QNAP_QSW_PASSWORD)")
 }
