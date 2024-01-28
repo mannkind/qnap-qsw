@@ -25,4 +25,6 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().StringVar(&rootCmdOpts.Host, "host", "switch.lan", "The host/ip")
 	rootCmd.PersistentFlags().StringVar(&rootCmdOpts.Password, "password", os.Getenv("QNAP_QSW_PASSWORD"), "The password of the admin user (default: $QNAP_QSW_PASSWORD)")
+
+	rootCmd.PersistentFlags().IntVar(&rootCmdOpts.Verbosity, "verbosity", 1, "The verbosity for logging")
 }
