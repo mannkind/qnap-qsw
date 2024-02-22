@@ -8,7 +8,10 @@ type rootCommandOptions struct {
 }
 
 type poeModeCmdOptions struct {
-	Token string
-	Ports []string
-	Mode  string
+	Token            string
+	DisablePorts     []string
+	PoePorts         []string
+	PoePlusPorts     []string
+	PoePlusPlusPorts []string
+	Mode             string
 }
