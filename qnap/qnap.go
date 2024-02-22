@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"sync"
 	"time"
 )
 
@@ -110,9 +109,7 @@ func (q *QNAP) POEInterfaces() (map[string]interfacesValueResponse, error) {
 	return interfaces, nil
 }
 
-func (q *QNAP) UpdatePOEInterfaces(wg *sync.WaitGroup, port string, properties interfacesValueResponse) error {
-	defer wg.Done()
-
+func (q *QNAP) UpdatePOEInterfaces(port string, properties interfacesValueResponse) error {
 	// Setup and send the request
 	url := fmt.Sprintf(interfaceURL, q.host)
 	marshaledProperites, err := json.Marshal(properties)

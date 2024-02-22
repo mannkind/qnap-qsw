@@ -35,19 +35,38 @@ var poeModeCmd = &cobra.Command{
 
 		// Set the POE interface statuses
 		wg := sync.WaitGroup{}
-		ch := make(chan error, len(poeModeOpts.Ports))
-		for _, port := range poeModeOpts.Ports {
-			portIdx := port
-			properties, ok := knownInterfaces[portIdx]
-			if !ok {
-				continue
-			}
+		allPortsCount := len(poeModeOpts.DisablePorts) + len(poeModeOpts.PoePorts) + len(poeModeOpts.PoePlusPorts) + len(poeModeOpts.PoePlusPlusPorts)
+		ch := make(chan error, allPortsCount)
+		portsAndModes := []struct {
+			ports []string
+			mode  string
+		}{
+			{ports: poeModeOpts.DisablePorts, mode: "disabled"},
+			{ports: poeModeOpts.PoePorts, mode: "poe"},
+			{ports: poeModeOpts.PoePlusPorts, mode: "poe+"},
+			{ports: poeModeOpts.PoePlusPlusPorts, mode: "poe++"},
+		}
 
-			properties.Mode = qnap.POEModes.Unknown.FromString(poeModeOpts.Mode)
-			wg.Add(1)
-			go func() {
-				ch <- q.UpdatePOEInterfaces(&wg, portIdx, properties)
-			}()
+		for _, portsAndMode := range portsAndModes {
+			for _, port := range portsAndMode.ports {
+				// Skip empty ports
+				if port == "" {
+					continue
+				}
+
+				portIdx := port
+				properties, ok := knownInterfaces[portIdx]
+				if !ok {
+					continue
+				}
+
+				properties.Mode = qnap.POEModes.Unknown.FromString(portsAndMode.mode)
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+					ch <- q.UpdatePOEInterfaces(portIdx, properties)
+				}()
+			}
 		}
 
 		wg.Wait()
@@ -76,6 +95,8 @@ func init() {
 	rootCmd.AddCommand(poeModeCmd)
 
 	poeModeCmd.Flags().StringVar(&poeModeOpts.Token, "token", "", "The token representing the admin user; use this or password")
-	poeModeCmd.Flags().StringSliceVar(&poeModeOpts.Ports, "ports", []string{}, "The ports to modify")
-	poeModeCmd.Flags().StringVar(&poeModeOpts.Mode, "mode", "disable", "The mode of the ports to modify")
+	poeModeCmd.Flags().StringSliceVar(&poeModeOpts.DisablePorts, "disable-ports", []string{}, "The ports to disable")
+	poeModeCmd.Flags().StringSliceVar(&poeModeOpts.PoePorts, "poe-ports", []string{}, "The ports to enable poe")
+	poeModeCmd.Flags().StringSliceVar(&poeModeOpts.PoePlusPorts, "poeplus-ports", []string{}, "The ports to enable poe+")
+	poeModeCmd.Flags().StringSliceVar(&poeModeOpts.PoePlusPlusPorts, "poeplusplus-ports", []string{}, "The ports to poe++")
 }

@@ -9,36 +9,17 @@ A quick and dirty script to take action on a QNAP QSW-M2116P-2T2S.
 ./qnap-qsw login --host switch.lan --password BLAH
 ```
 
-### Disable POE Ports
-#### With Password
+### Disable/Enable POE Ports
 ```
-./qnap-qsw poeMode --host switch.lan --password BLAH --ports 1,2,3,4 --mode disabled
-```
-#### With Token
-```
-token=$(./qnap-qsw login --host switch.lan --password BLAH)
-./qnap-qsw poeMode --host switch.lan --token $token --ports 1,2,3,4 --mode disabled
-```
-
-### Enable POE Ports
-#### With Password
-```
-./qnap-qsw poeMode --host switch.lan --password BLAH --ports 1,2,3,4 --mode poe+
-./qnap-qsw poeMode --host switch.lan --password BLAH --ports 19,20 --mode poe++
-```
-#### With Token
-```
-token=$(./qnap-qsw login --host switch.lan --password BLAH)
-./qnap-qsw poeMode --host switch.lan --token $token --ports 1,2,3,4 --mode poe+
-./qnap-qsw poeMode --host switch.lan --token $token --ports 19,20 --mode poe++
+./qnap-qsw poeMode --host switch.lan --password BLAH --disable-ports 1,2,3,4
+./qnap-qsw poeMode --host switch.lan --password BLAH --disable-ports 1,2 --poeplus-ports 3,4 --poeplusplus-ports 19,20
 ```
 
 ### Home Assistant
 
 #### shell_commands.yaml
 ```
-qnap_qsw: "/qnap-qsw login --host {{ host }} --password {{ password }}"
-qnap_qsw_poe: "/config/qnap-qsw poeMode --host {{ host }} --token {{ token }} --ports {{ ports }} --mode {{ mode }}"
+qnap_qsw_poe: "/config/qnap-qsw poeMode --host {{ host }} --password {{ password }} --disable-ports '{{ disable_ports }}' --poe-ports '{{ poe_ports }}' --poeplus-ports '{{ poeplus_ports }}' --poeplusplus-ports '{{ poeplusplus_ports }}'"
 ```
 
 #### automations.yaml
@@ -57,17 +38,11 @@ qnap_qsw_poe: "/config/qnap-qsw poeMode --host {{ host }} --token {{ token }} --
         seconds: 0
   condition: []
   action:
-    - service: shell_command.qnap_qsw
-      data:
-        host: switch.lan
-        password: <password here>
-      response_variable: login
     - service: shell_command.qnap_qsw_poe
       data:
         host: switch.lan
-        token: "{{ login['stdout'] }}"
-        ports: 1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,19,20
-        mode: disabled
+        password: <password here>
+        disable_ports: 1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,19,20
   mode: single
 - alias: "Turn on non-essential POE ports after power outage"
   description: ""
@@ -83,22 +58,11 @@ qnap_qsw_poe: "/config/qnap-qsw poeMode --host {{ host }} --token {{ token }} --
         seconds: 0
   condition: []
   action:
-    - service: shell_command.qnap_qsw
+    - service: shell_command.qnap_qsw_poe
       data:
         host: switch.lan
         password: <password here>
-      response_variable: login
-    - service: shell_command.qnap_qsw_poe
-      data:
-        host: switch.lan
-        token: "{{ login['stdout'] }}"
-        ports: 1,2,3,4,5,6,7,8,9,10,11,12,13,14,16
-        mode: poe+
-    - service: shell_command.qnap_qsw_poe
-      data:
-        host: switch.lan
-        token: "{{ login['stdout'] }}"
-        ports: 19,20
-        mode: poe++
+        poeplus_ports: 1,2,3,4,5,6,7,8,9,10,11,12,13,14,16
+        poeplusplus_ports: 19,20
   mode: single
 ```
